@@ -4,7 +4,7 @@
 
 **clipSlate** – your ultimate solution to the age-old challenge in video production playback!
 
-![Example Slate](https://github.com/cpvalente/ontime/blob/master/.github/images/example_slate.jpg)
+![Example Slate](https://github.com/ImpossibleWorks/clipSlate/blob/main/.github/images/example_slate.jpg)
 
 If you're in video production and you playback videos, you've probably loaded a video and found yourself starting a black screen (the first frame of a video that fades in from black). **clipSlate** steps in to revolutionize your workflow, ensuring that the first frame hiccup is a thing of the past.
 
