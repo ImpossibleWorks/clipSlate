@@ -24,8 +24,8 @@ Currently, this is python script (with plans to make a standalone executable in 
 
 Here is a punchlist things to look into:
 
+- [ ] Add-in ability to point clipSlate to a directory, intead of just a single file.
 - [ ] Compile into standalone executable, for Mac + Win.
 - [ ] Optimize the ffmpeg encoding.
-- [ ] Add-in ability to point clipSlate to a directory intead of a single file.
 - [ ] Look into pathlib and ffmpeg library to improve efficiency.
 - [ ] is a GUI necessary?
