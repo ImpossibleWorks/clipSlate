@@ -50,6 +50,10 @@ def is_valid_path(path):
     else:
         return False
 
+def clean_path(path):
+    cleaned_path = path.replace("\ ", " ")
+    return cleaned_path
+
 def is_video(path):
     kind = filetype.guess(path)
     if kind.mime[:5] == "video":
@@ -60,13 +64,13 @@ def is_video(path):
 def get_clip_info(path):
     clip_name, clip_ext = os.path.splitext(os.path.basename(path))
     tell_user("Getting info on video " + clip_name + clip_ext,"hold")
-    cmd = 'ffprobe -v error -select_streams v -count_packets -show_entries stream=width,height,duration,nb_read_packets,r_frame_rate -of csv=p=0 ' + path
+    cmd = 'ffprobe -v error -select_streams v -count_packets -show_entries stream=width,height,duration,nb_read_packets,r_frame_rate -of csv=p=0 "' + path + '"'
     cmd_result = subprocess.check_output(cmd,shell=True,stderr=subprocess.DEVNULL).rstrip().decode('UTF-8')
     result = cmd_result.split(',')
 
     clip_trt = float(result[3])
     min_sec = time.strftime("%Mm%Ss", time.gmtime(clip_trt))
-    directory = os.path.dirname(path)
+    directory = clean_path(os.path.dirname(path))
     tell_user('DONE','done')
     return {'name':clip_name,
             'ext':clip_ext,
@@ -84,7 +88,7 @@ def extract_images(clip_info,segment_length):
     img_to_extract = ''
     for x in range(100, clip_info["frames"], segment_length):
         img_to_extract += '+eq(n\\,' + str(x) + ')'
-    cmd = 'ffmpeg -i ' + clip_info['path'] + ' -vf select="' + img_to_extract + '" -fps_mode passthrough "' + temp_dir.name + '/' + clip_info['name'] + '_%d.jpg"'
+    cmd = f'ffmpeg -i "{clip_info['path']}" -vf select="{img_to_extract}" -fps_mode passthrough "{temp_dir.name}/thumbnail_%d.jpg"'
     result = subprocess.run(cmd,shell=True,stderr=subprocess.DEVNULL)
     tell_user("DONE",'done')
 
@@ -104,10 +108,10 @@ def make_slate_1(clip_info):
     paste_coords = ((0, 360), (640, 360), (1280, 360), (0, 720), (640, 720), (1280, 720))
 
     for x in range(0,tot_stills):
-        tmpImg = Image.open(temp_dir.name + '/' + clip_info['name'] + '_' + str(x+1) + '.jpg')
+        tmpImg = Image.open(temp_dir.name + '/' + 'thumbnail_' + str(x+1) + '.jpg')
         tmpResized = tmpImg.resize((640,360))
         slate.paste(tmpResized,paste_coords[x])
-
+    
     tell_user("DONE",'done')
 
     # add text
@@ -147,14 +151,14 @@ def make_slate_1(clip_info):
 
 def encode_clip(clip_info,slate_path):
      # Insert into video
-    tell_user('Transcoding video (' + color.YELLOW + 'Please be patient' + color.END + '! This might take a while.)', '')
-    cmd = f'ffmpeg -y -i {clip_info['path']} -i {slate_path} -filter_complex "overlay=0:0:enable=\'between(t,0,.01)\'" -preset fast -c:a copy {clip_info['directory']}/{clip_info['name']}_clipslate{clip_info['ext']}'
+    tell_user('Transcoding video. This might take a while. ' + color.YELLOW + 'Please be patient!' + color.END, '')
+    cmd = f'ffmpeg -y -i "{clip_info['path']}" -i "{slate_path}" -filter_complex "overlay=0:0:enable=\'between(t,0,.01)\'" -preset fast -c:a copy "{clip_info['directory']}/{clip_info['name']}_clipslate{clip_info['ext']}"'
     cmd_result = subprocess.check_output(cmd,shell=True,stderr=subprocess.DEVNULL)
     tell_user('Clip encoding','hold')
     tell_user('DONE','done')
 
 def insert_newlines(string, every=30):
-    return '\n'.join(string[i:i+every] for i in range(0, len(string), every))
+    return '\n'.join(string[i:i+every] for i in range(0, len(string), every))    
 
 def tell_user(msg = '',type = ''):
     preface = color.BOLD + '[clipSlate] '+ color.END
@@ -177,17 +181,14 @@ def end_clean():
     sys.exit()
 
 def main():
-    print(f'\n{color.BOLD}clipSlate{color.END}')
-    print('---------')
-    print('v1.0, by TC Conway, IW Studios\n')
-    print(f"DEBUG: Temp Dir: {temp_dir.name}")
-
     parser = argparse.ArgumentParser(description='Creates a clipSlate, and optionally adds it to the clip.')
     parser.add_argument('-f', dest='file', action='store', type=str, help='The file to process.')
     parser.add_argument('-e', dest='encode',help="Encode the target file with the clipSlate", action='store_true')
 
     # get the path to the target object (either by -f or by asking)
     args = parser.parse_args()
+    args.file = clean_path(args.file)
+
     if args.file == None:
         clip_path = ask_clip_path()
     else:
@@ -211,9 +212,15 @@ def main():
     if args.encode:
         encode_clip(clip_info, slate_path)
     else:
-        tell_user("The clipSlate WASN'T added into the clip. Include '-e' if you want to do it.",'alert')
+        tell_user("Note: The clipSlate WASN'T added into the clip. Include '-e' if you want to do it.",'alert')
 
     end_clean()
 
 if __name__ == "__main__":
+    # Startup
+    print(f'\n{color.BOLD}clipSlate{color.END}')
+    print('---------')
+    print('v1.0, by TC Conway, IW Studios\n')
+    print(f"DEBUG: Temp Dir: {temp_dir.name}")
+
     main()
