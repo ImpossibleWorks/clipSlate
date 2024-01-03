@@ -20,6 +20,38 @@ With **clipSlate**, every first frame tells the whole story. Streamline your pro
 
 Currently, this is python script (with plans to make a standalone executable in the near future).
 
+## Installation
+
+Please install ffmpeg + ffprobe. See: https://ffmpeg.org/download.html
+
+### Mac
+
+- If you run the binary, you'll need to open Privay & Security, and allow the file anyway.
+
+### Dependencies
+
+This project requires _ffmpeg_ to be installed on the system to work.
+
+### Windows
+
+Visit the [FFMPEG Windows Install](https://ffmpeg.org/download.html#build-windows) website to download.
+
+### Linux
+
+```bash
+apt-get update && apt-get install -y ffmpeg
+```
+
+### OSX
+
+##### ffmpeg
+
+```bash
+brew install ffmpeg
+```
+
+---
+
 ## Things to do
 
 Here is a punchlist things to look into:
